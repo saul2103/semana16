@@ -2,212 +2,159 @@
 
 **Estudiante:** Bryan Saul Iza Llano
 
-Aplicacion de escritorio para gestionar un restaurante con Python y Tkinter. El proyecto sigue una separacion clara entre interfaz, modelo de datos, servicios y persistencia local en archivos JSON. Ademas, incorpora la funcionalidad de ventas para registrar operaciones del negocio y mantener un historial actualizado.
+Aplicacion de escritorio para administrar usuarios, productos y ventas de un restaurante. Esta desarrollada en Python con Tkinter y organiza la interfaz, los modelos, los servicios y los datos JSON en modulos separados.
 
-## Objetivo del proyecto
+## Funcionalidades
 
-La aplicacion permite iniciar sesion, consultar usuarios, administrar productos y registrar ventas de manera sencilla desde una interfaz grafica. Todo el flujo se maneja localmente sin dependencia de una base de datos externa, usando archivos JSON como almacenamiento principal.
+- Inicio de sesion con validacion de credenciales y roles.
+- Panel principal con resumen de usuarios, productos y ventas.
+- Administracion de usuarios: registrar, consultar, actualizar y eliminar. Esta seccion esta disponible para el rol administrador.
+- Administracion de productos: registrar, buscar por codigo, actualizar, eliminar y limpiar el formulario.
+- Registro de ventas asociadas a un usuario y un producto existentes.
+- Historial de ventas con identificador, usuario, producto y fecha.
+- Generacion de reportes PDF de ventas, con resumen y detalle.
+- Actualizacion de tablas y totales despues de las operaciones.
+- Persistencia local de usuarios, productos y ventas en archivos JSON.
 
-## Funcionalidades principales
+## Interfaz
 
-- Inicio de sesion con validacion de usuario y contrasena.
-- Vista principal con menu lateral para navegar entre secciones.
-- Registro, consulta, actualizacion y eliminacion de productos.
-- Registro de ventas con seleccion de usuario y producto.
-- Visualizacion de ventas registradas en una tabla con columnas y scroll.
-- Persistencia local en archivos JSON para usuarios, productos y ventas.
-- Barra de estado con conteo de usuarios, productos y ventas.
-- Interfaz visual con estilos, colores, iconos y mejor distribucion de elementos.
-- Validaciones para evitar campos vacios, codigos duplicados y datos invalidos.
-- Mensajes informativos para exito y errores.
+La ventana principal incluye un menu lateral para Inicio, Usuarios, Productos y Ventas, un area de contenido y una barra de estado. Los formularios y las tablas se organizan en paneles separados; en Usuarios, el formulario aparece a la izquierda y la tabla a la derecha.
 
-## Mejoras implementadas en la interfaz
+Los botones usan iconos reutilizados por la aplicacion y el menu restablece su estado al cambiar de seccion. Esto evita que un boton parezca quedarse presionado y permite seguir navegando despues de abrir Ventas.
 
-Se han incorporado mejoras visuales y funcionales para que la aplicacion sea mas clara y usable:
+## Inicio de sesion
 
-- Menu lateral con distintas opciones: Inicio, Usuarios, Productos y Ventas.
-- Estructura principal con contenedor central y barra inferior de estado.
-- Estilos personalizados para botones y tablas.
-- Uso de iconos para acciones principales como registrar, buscar, eliminar y cerrar sesion.
-- Mejor organizacion de formularios y listados mediante frames y grids.
-- Ajuste del ancho de tablas y paneles para que el contenido se adapte mejor a la ventana actual.
-- La seccion Ventas presenta un formulario de seleccion y una tabla con historial de ventas.
-- Los listados de productos, usuarios y ventas se actualizan automaticamente tras cada operacion.
+Estas cuentas estan incluidas en `restaurante_app/datos/usuarios.json`:
 
-## Modulo de ventas
+| Rol | Usuario | Contrasena |
+| --- | --- | --- |
+| Administrador | `saul` | `saul123` |
+| Cocinero | `cocinero1` | `cocina123` |
+| Cocinero | `cocinero2` | `cocinero1234` |
 
-La funcionalidad de ventas es una de las mejoras mas relevantes del proyecto. En la vista de ventas se puede:
+Las contrasenas se guardan como texto en el JSON local. Estas cuentas son datos de demostracion; no se recomienda usar este mecanismo para un sistema en produccion.
 
-1. Seleccionar un usuario y un producto desde combobox.
-2. Registrar una venta con la fecha actual.
-3. Guardar la operacion automaticamente en el archivo JSON de ventas.
-4. Ver el historial de ventas en una tabla organizada.
-5. Revisar los datos relacionados con cada venta en una sola vista.
+## Gestion de usuarios y roles
 
-Cada venta queda asociada a:
+La pantalla **Usuarios** presenta el formulario a la izquierda y la tabla de cuentas a la derecha. Desde ella se puede registrar, seleccionar, actualizar, eliminar y limpiar usuarios. Al seleccionar una fila se cargan sus datos en el formulario. La contrasena se muestra enmascarada mientras se escribe.
 
-- identificador de la venta
-- usuario responsable
-- producto vendido
-- fecha en la que se registro
+Los roles disponibles son:
 
-Esto permite llevar un control basico del negocio desde la aplicacion.
+- `administrador`: puede abrir la pantalla Usuarios y administrar cuentas. No puede eliminar su propia cuenta y, al editarse a si mismo, el selector de rol queda deshabilitado.
+- `cocinero`: rol disponible para las cuentas de cocina. La pantalla Usuarios comprueba que la cuenta activa sea administradora antes de mostrar la gestion.
 
-## Persistencia de datos
+El servicio valida que los campos requeridos no esten vacios, que el identificador no se repita, que el nombre de acceso sea unico y que el rol sea `administrador` o `cocinero`. En la interfaz actual, la comprobacion de permisos explicita se aplica a Usuarios; Productos y Ventas no realizan una comprobacion de rol equivalente.
 
-La aplicacion usa archivos JSON locales para conservar la informacion del restaurante:
+## Eventos, `bind()` y callbacks
 
-- `restaurante_app/datos/usuarios.json`: guarda identificadores, nombre, usuario y contrasena.
-- `restaurante_app/datos/productos.json`: guarda codigo, nombre y precio.
-- `restaurante_app/datos/ventas.json`: guarda cada venta con su identificador, usuario, producto y fecha.
+Tkinter ejecuta callbacks cuando ocurre una accion. En los botones, `command=` recibe la funcion que se ejecutara al hacer clic; se pasa la referencia sin parentesis para no ejecutarla durante la construccion de la interfaz:
 
-La clase `ArchivoServicio` se encarga de leer y escribir los archivos, creando listas vacias si no existen o si el contenido no es valido. De esta manera, las operaciones sobre usuarios, productos y ventas se vuelven persistentes y visibles cada vez que se reinicia la aplicacion.
-
-## Logica de negocio
-
-El servicio principal `RestauranteServicio` centraliza la mayor parte de la logica del sistema. Entre sus funciones se encuentran:
-
-- validacion de acceso
-- conteo de usuarios, productos y ventas
-- listado de registros
-- busqueda de producto por codigo
-- registro, actualizacion y eliminacion de productos
-- registro de ventas con validacion de usuario y producto existentes
-- generacion de identificadores para ventas
-- guardado automatico en JSON
-
-Esto permite mantener un codigo ordenado y facilitar las futuras ampliaciones.
-
-## Estructura del proyecto
-
-```text
-SEMANA 15/
-|-- README.md
-|-- restaurante_app/
-    |-- main.py
-    |-- datos/
-    |   |-- productos.json
-    |   |-- usuarios.json
-    |   |-- ventas.json
-    |-- modelos/
-    |   |-- producto.py
-    |   |-- usuario.py
-    |   |-- venta.py
-    |   |-- __init__.py
-    |-- servicios/
-    |   |-- archivo_servicio.py
-    |   |-- restaurante_servicio.py
-    |   |-- __init__.py
-    |-- ui/
-    |   |-- login_view.py
-    |   |-- main_view.py
-    |   |-- __init__.py
-    |-- assets/
-        |-- icons/
-        |-- logo/
+```python
+ttk.Button(contenedor, text="Iniciar sesion", command=self.iniciar_sesion)
 ```
 
-## Componentes y tecnologias usadas
+`bind()` conecta un evento del teclado o de un widget a una funcion. A diferencia de `command=`, el callback de `bind()` recibe el objeto `event` como argumento. Por ejemplo, Enter en el campo de contrasena inicia sesion:
 
-La interfaz se desarrollo con Tkinter, un conjunto de widgets de Python para crear aplicaciones de escritorio:
-
-- `Tk`: ventana principal.
-- `Frame`: separacion de secciones.
-- `Label`: textos, titulos y mensajes.
-- `Entry`: campos para usuario, contrasena, codigo y nombre.
-- `LabelFrame`: agrupacion de formularios y listados.
-- `ttk.Button`: botones visuales con estilo moderno.
-- `ttk.Combobox`: seleccion de usuario y producto en ventas.
-- `ttk.Treeview`: tablas para usuarios, productos y ventas.
-- `ttk.Scrollbar`: desplazamiento vertical de tablas.
-- `PhotoImage`: carga de logo e iconos.
-- `messagebox`: avisos de exito o validacion.
-
-## Pantallas principales
-
-### Inicio de sesion
-
-La primera vista permite iniciar sesion con usuario y contrasena. Si los datos son correctos se accede a la interfaz principal. Cuando no son validos, se muestra un mensaje de error.
-
-Usuario de prueba incluido:
-
-```text
-Usuario: saul
-Contrasena: saul123
+```python
+self.contrasena_entry.bind("<Return>", lambda evento: self.iniciar_sesion())
 ```
 
-### Vista principal
+Eventos conectados en la gestion de usuarios:
 
-La pantalla principal contiene un menu lateral y un area de contenido. Desde alli se puede acceder a:
+- `<<TreeviewSelect>>`: al seleccionar una fila de la tabla, carga ese usuario en el formulario.
+- `<<ComboboxSelected>>`: actualiza el texto que indica el rol seleccionado.
+- `<Return>` en el selector de rol: intenta registrar el usuario del formulario.
+- `<Escape>` en los campos, el selector de rol y la tabla: limpia el formulario.
+- Clic en un boton: su `command=` llama al callback de registrar, actualizar, eliminar o limpiar.
 
-- Inicio
-- Usuarios
-- Productos
-- Ventas
+Los callbacks de la interfaz validan la accion, llaman a `RestauranteServicio` para aplicar la operacion y muestran mensajes de resultado o error.
 
-### Seccion de ventas
+## Datos locales
 
-En la seccion de ventas se presentan dos elementos principales:
+Los archivos de `restaurante_app/datos/` almacenan:
 
-- formulario de registro con dos combobox para seleccionar usuario y producto
-- tabla de ventas registradas con la informacion completa
+- `usuarios.json`: identificador, nombre, usuario, contrasena y rol.
+- `productos.json`: codigo, nombre y precio.
+- `ventas.json`: identificador, usuario asociado, producto asociado y fecha.
 
-Esta vista ofrece una experiencia mas completa para trabajar con el historial de ventas del restaurante.
+`ArchivoServicio` centraliza la lectura y escritura. Los archivos inexistentes o vacios se inicializan como listas JSON. Mantenga su contenido en formato JSON valido para evitar errores al cargar los datos.
 
-## Operaciones sobre productos
+### Persistencia de `usuarios.json`
 
-La seccion Productos permite realizar lo siguiente:
+Cada usuario se guarda como un objeto con `identificador`, `nombre`, `usuario`, `contrasena` y `rol`. Al registrar, actualizar o eliminar una cuenta, `RestauranteServicio.guardar_usuarios()` convierte la lista actual de usuarios a esos campos y `ArchivoServicio` escribe el resultado en `restaurante_app/datos/usuarios.json`. Los cambios quedan guardados inmediatamente y se conservan al cerrar la aplicacion.
 
-1. Registrar un producto nuevo.
-2. Buscarlo por codigo.
-3. Actualizar sus datos.
-4. Eliminarlo del registro.
-5. Limpiar el formulario.
+Si `usuarios.json` no existe o esta vacio, el servicio inicia con las cuentas de demostracion. El archivo debe contener una lista JSON valida. Importante: las contrasenas se almacenan sin cifrar; esta persistencia es para un proyecto local de aprendizaje, no para proteger cuentas reales.
 
-El sistema valida que el codigo no se repita, que los textos no queden vacios y que el precio sea numerico y positivo.
+## Estructura
 
-## Operaciones sobre ventas
-
-La seccion Ventas permite:
-
-1. Seleccionar un usuario.
-2. Seleccionar un producto.
-3. Registrar la venta.
-4. Guardarla automaticamente.
-5. Mostrar el historial actualizado en la tabla.
+```text
+README.md
+restaurante_app/
+|-- main.py
+|-- assets/
+|   |-- icons/
+|   |-- logo/
+|-- datos/
+|   |-- productos.json
+|   |-- usuarios.json
+|   |-- ventas.json
+|-- modelos/
+|   |-- producto.py
+|   |-- usuario.py
+|   |-- venta.py
+|-- servicios/
+|   |-- archivo_servicio.py
+|   |-- reporte_servicio.py
+|   |-- restaurante_servicio.py
+|-- ui/
+    |-- login_view.py
+    |-- main_view.py
+```
 
 ## Requisitos
 
-- Python 3 instalado.
-- Tkinter disponible en el entorno.
-- Archivos del proyecto conservados en la estructura original.
+- Python 3.
+- Tkinter disponible en la instalacion de Python.
+- ReportLab, solo para generar reportes PDF.
 
-No se requieren paquetes externos adicionales.
+Instale ReportLab desde la carpeta raiz del proyecto si necesita exportar reportes:
 
-## Como ejecutar el proyecto
+```powershell
+py -m pip install reportlab
+```
 
-1. Abrir una terminal.
-2. Ubicarse en la carpeta raiz del proyecto.
-3. Ejecutar:
+Sin ReportLab, se pueden utilizar las demas funciones de la aplicacion; la opcion de reporte indicara que falta esa dependencia.
+
+## Ejecucion de `main.py`
+
+1. Instale Python 3 y compruebe que Tkinter este disponible. En Windows puede probarlo con `py -m tkinter`; debe abrirse una ventana de demostracion.
+2. Abra en VS Code la carpeta raiz del proyecto, la que contiene este README y la carpeta `restaurante_app`.
+3. Abra una terminal integrada y confirme que la ruta actual sea esa carpeta raiz.
+4. Inicie la aplicacion con:
 
 ```powershell
 py restaurante_app\main.py
 ```
 
-O en Linux o macOS:
+Tambien puede entrar primero en `restaurante_app` y ejecutar el archivo desde ahi:
 
-```bash
-python restaurante_app/main.py
+```powershell
+cd restaurante_app
+py main.py
 ```
 
-## Verificacion de codigo
+En Linux o macOS, desde la carpeta raiz:
 
-Se puede comprobar la integridad del proyecto con:
+```bash
+python3 restaurante_app/main.py
+```
+
+`main.py` crea la ventana Tkinter, carga los datos desde `datos/`, prepara los servicios y muestra el login. Inicie sesion con una de las cuentas de demostracion de la tabla anterior. ReportLab solo es necesario para generar reportes PDF; el resto de la aplicacion puede ejecutarse sin ese paquete.
+
+## Verificacion
+
+Para comprobar la sintaxis de los modulos:
 
 ```powershell
 py -m compileall -q restaurante_app
 ```
-
-## Notas finales
-
-El proyecto combina una interfaz grafica funcional con un modelo de persistencia simple basado en JSON. Gracias a esta estructura, es facil mantener los datos, ampliar la app con nuevas funciones y visualizar operaciones del negocio como ventas, usuarios y productos desde una sola aplicacion.

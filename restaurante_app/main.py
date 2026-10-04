@@ -38,6 +38,7 @@ class RestauranteApp:
             pass
 
 
+
     def cambiar_vista(self, nueva_vista):
         # Oculta la vista anterior y muestra la nueva.
         if self.vista_actual is not None:

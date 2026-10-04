@@ -1,10 +1,11 @@
 class Usuario:
     # Guarda los datos de una persona que puede entrar al sistema.
-    def __init__(self, identificador, nombre, usuario, contrasena):
+    def __init__(self, identificador, nombre, usuario, contrasena, rol):
         self.identificador = identificador
         self.nombre = nombre
         self.usuario = usuario
         self.contrasena = contrasena
+        self.rol = rol  # Asigna el rol al usuario.
 
     @staticmethod
     def validar_texto(valor, campo):
@@ -49,3 +50,11 @@ class Usuario:
     def contrasena(self, valor):
         # Guarda la clave de acceso.
         self._contrasena = self.validar_texto(valor, "contrasena")
+
+    @property
+    def rol(self):
+        return self._rol
+
+    @rol.setter
+    def rol(self, valor):
+        self._rol = self.validar_texto(valor, "rol")

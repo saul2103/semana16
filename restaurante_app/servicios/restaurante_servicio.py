@@ -16,7 +16,44 @@ class RestauranteServicio:
 
     def cargar_datos(self):
         # Trae los datos guardados y crea sus objetos.
-        usuarios_json = self.archivo_servicio.leer_json("usuarios.json")
+        try:
+            usuarios_json = self.archivo_servicio.leer_json("usuarios.json")
+        except ValueError:
+            usuarios_json = [
+                {
+                    "identificador": "U001",
+                    "nombre": "Administrador",
+                    "usuario": "saul",
+                    "contrasena": "saul123",
+                    "rol": "administrador",
+                },
+                {
+                    "identificador": "U002",
+                    "nombre": "Cocinero",
+                    "usuario": "cocinero1",
+                    "contrasena": "cocina123",
+                    "rol": "cocinero",
+                },
+            ]
+
+        if not usuarios_json:
+            usuarios_json = [
+                {
+                    "identificador": "U001",
+                    "nombre": "Administrador",
+                    "usuario": "saul",
+                    "contrasena": "saul123",
+                    "rol": "administrador",
+                },
+                {
+                    "identificador": "U002",
+                    "nombre": "Cocinero",
+                    "usuario": "cocinero1",
+                    "contrasena": "cocina123",
+                    "rol": "cocinero",
+                },
+            ]
+
         productos_json = self.archivo_servicio.leer_json("productos.json")
         ventas_json = self.archivo_servicio.leer_json("ventas.json")
 
@@ -25,7 +62,8 @@ class RestauranteServicio:
                 datos.get("identificador", ""),
                 datos.get("nombre", ""),
                 datos.get("usuario", ""),
-                datos.get("contrasena", datos.get("contraseña", "")),
+                datos.get("contrasena", ""),
+                datos.get("rol", ""),
             )
             for datos in usuarios_json
         ]
@@ -112,6 +150,95 @@ class RestauranteServicio:
             if usuario.identificador == identificador:
                 return usuario
         return None
+
+    def guardar_usuarios(self):
+        datos = [
+            {
+                "identificador": usuario.identificador,
+                "nombre": usuario.nombre,
+                "usuario": usuario.usuario,
+                "contrasena": usuario.contrasena,
+                "rol": usuario.rol,
+            }
+            for usuario in self.usuarios
+        ]
+        self.archivo_servicio.escribir_json("usuarios.json", datos)
+
+    def generar_identificador_usuario(self):
+        siguiente = len(self.usuarios) + 1
+        return f"U{siguiente:03d}"
+
+    def registrar_usuario(self, identificador, nombre, usuario, contrasena, rol):
+        identificador = identificador.strip()
+        nombre = nombre.strip()
+        usuario = usuario.strip()
+        contrasena = contrasena.strip()
+        rol = rol.strip().lower()
+
+        if not identificador:
+            raise ValueError("El identificador no puede estar vacio.")
+        if not nombre:
+            raise ValueError("El nombre no puede estar vacio.")
+        if not usuario:
+            raise ValueError("El usuario no puede estar vacio.")
+        if not contrasena:
+            raise ValueError("La contraseña no puede estar vacia.")
+        if rol not in {"administrador", "cocinero"}:
+            raise ValueError("El rol debe ser administrador o cocinero.")
+        if self.buscar_usuario_por_identificador(identificador) is not None:
+            raise ValueError("Ya existe un usuario con ese identificador.")
+        if any(usuario_registrado.usuario.lower() == usuario.lower() for usuario_registrado in self.usuarios):
+            raise ValueError("Ya existe un usuario con ese nombre de acceso.")
+
+        nuevo_usuario = Usuario(identificador, nombre, usuario, contrasena, rol)
+        self.usuarios.append(nuevo_usuario)
+        self.guardar_usuarios()
+        return nuevo_usuario
+
+    def actualizar_usuario(self, identificador, nombre, usuario, contrasena, rol, usuario_actual_id=None):
+        usuario_actual = self.buscar_usuario_por_identificador(identificador)
+        if usuario_actual is None:
+            raise ValueError("No existe un usuario con ese identificador.")
+
+        usuario_nuevo = usuario.strip()
+        nombre_nuevo = nombre.strip()
+        contrasena_nueva = contrasena.strip()
+        rol_nuevo = rol.strip().lower()
+
+        if not nombre_nuevo:
+            raise ValueError("El nombre no puede estar vacio.")
+        if not usuario_nuevo:
+            raise ValueError("El usuario no puede estar vacio.")
+        if not contrasena_nueva:
+            raise ValueError("La contraseña no puede estar vacia.")
+        if rol_nuevo not in {"administrador", "cocinero"}:
+            raise ValueError("El rol debe ser administrador o cocinero.")
+
+        for usuario_registrado in self.usuarios:
+            if (
+                usuario_registrado.identificador != identificador
+                and usuario_registrado.usuario.lower() == usuario_nuevo.lower()
+            ):
+                raise ValueError("Ya existe otro usuario con ese nombre de acceso.")
+
+        usuario_actual.nombre = nombre_nuevo
+        usuario_actual.usuario = usuario_nuevo
+        usuario_actual.contrasena = contrasena_nueva
+        usuario_actual.rol = rol_nuevo
+        self.guardar_usuarios()
+        return usuario_actual
+
+    def eliminar_usuario(self, identificador, usuario_actual_id=None):
+        usuario_actual = self.buscar_usuario_por_identificador(identificador)
+        if usuario_actual is None:
+            raise ValueError("No existe un usuario con ese identificador.")
+
+        if usuario_actual_id is not None and identificador == usuario_actual_id:
+            raise ValueError("No puedes eliminar tu propio usuario.")
+
+        self.usuarios = [usuario for usuario in self.usuarios if usuario.identificador != identificador]
+        self.guardar_usuarios()
+        return usuario_actual
 
     def generar_identificador_venta(self):
         siguiente= len(self.ventas)+1

@@ -3,14 +3,21 @@
         "identificador": "U001",
         "nombre": "Administrador",
         "usuario": "saul",
-        "contrasena": "saul123"
-    }
-]
-[
+        "contrasena": "saul123",
+        "rol": "administrador"
+    },
     {
         "identificador": "U002",
         "nombre": "Cocinero",
         "usuario": "cocinero1",
-        "contrasena": "cocina123"
+        "contrasena": "cocina123",
+        "rol": "cocinero"
+    },
+    {
+        "identificador": "U003",
+        "nombre": "Cocinero",
+        "usuario": "cocinero2",
+        "contrasena": "cocinero1234",
+        "rol": "cocinero"
     }
 ]

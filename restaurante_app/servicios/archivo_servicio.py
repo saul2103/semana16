@@ -26,11 +26,12 @@ class ArchivoServicio:
             return []
 
         try:
-            return json.loads(contenido)
-        except json.JSONDecodeError:
-            with ruta.open("w", encoding="utf-8") as archivo:
-                json.dump([], archivo, ensure_ascii=False, indent=4)
-            return []
+            datos = json.loads(contenido)
+            if not isinstance(datos, list):
+                raise ValueError(f"El archivo '{nombre_archivo}' no contiene una lista JSON válida.")
+            return datos
+        except (json.JSONDecodeError, ValueError) as error:
+            raise ValueError(f"El archivo '{nombre_archivo}' tiene un formato JSON inválido.") from error
 
     def escribir_json(self, nombre_archivo, datos):
         # Guarda los datos actuales en formato JSON.
