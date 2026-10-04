@@ -1,0 +1,27 @@
+[
+    {
+        "codigo": "P001",
+        "nombre": "Ceviche",
+        "precio": 12.5
+    },
+    {
+        "codigo": "P002",
+        "nombre": "Lomo saltado",
+        "precio": 18.0
+    },
+    {
+        "codigo": "P004",
+        "nombre": "Arroz mixto",
+        "precio": 9.0
+    },
+    {
+        "codigo": "P003",
+        "nombre": "Jugo natural",
+        "precio": 3.0
+    },
+    {
+        "codigo": "P005",
+        "nombre": "Encebollado",
+        "precio": 4.5
+    }
+]
